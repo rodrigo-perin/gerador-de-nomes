@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gerador-de-nomes
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: gerador-de-nomes
+  template:
+    metadata:
+      labels:
+        app: gerador-de-nomes
+    spec:
+      containers:
+        - name: gerador-de-nomes
+          image: gerador-de-nomes:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+          env:
+            - name: REDIS_HOST
+              value: "redis-service"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gerador-de-nomes-service
+spec:
+  selector:
+    app: gerador-de-nomes
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: NodePort

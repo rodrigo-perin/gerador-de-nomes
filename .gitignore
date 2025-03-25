@@ -1,0 +1,44 @@
+# Ignorar arquivos Python compilados
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorar arquivos de ambiente virtual
+venv/
+.env
+*.env
+
+# Ignorar logs e arquivos temporários
+*.log
+*.out
+*.pid
+*.swp
+*.swo
+
+# Ignorar dependências instaladas
+*.egg-info/
+dist/
+build/
+
+# Ignorar credenciais do Docker e Kubernetes
+*.crt
+*.key
+docker-compose.override.yml
+kubeconfig
+.kube/
+
+# Ignorar imagens Docker locais
+*.tar
+*.img
+*.iso
+.DS_Store
+
+# Ignorar configurações do VSCode e IDEs
+.vscode/
+.idea/
+*.iml
+
+# Ignorar arquivos gerados pelo sistema operacional
+Thumbs.db
+desktop.ini

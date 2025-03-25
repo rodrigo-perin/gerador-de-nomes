@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Nomes</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Gerador de nomes</h1>
+        <br />
+        Atualize a página para gerar mais nomes
+        <br />
+        <br />
+        <table>
+            <tr><th>Nomes Recentes</th></tr>
+            {% for name in names %}
+            <tr><td>{{ name }}</td></tr>
+            {% endfor %}
+        </table>
+        <br/>
+        <br/>
+        Versão 1.16
+        <br/>
+        Autor: Rodrigo Perin
+    </div>
+</body>
+</html>
