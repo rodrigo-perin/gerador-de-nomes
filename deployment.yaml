@@ -1,20 +1,36 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flask-app
+  name: gerador-de-nomes
 spec:
-  replicas: 5
+  replicas: 3
   selector:
     matchLabels:
-      app: flask-app
+      app: gerador-de-nomes
   template:
     metadata:
       labels:
-        app: flask-app
+        app: gerador-de-nomes
     spec:
       containers:
-      - name: flask-app
-        image: flask-app:latest
-        imagePullPolicy: Never
-        ports:
-        - containerPort: 80
+        - name: gerador-de-nomes
+          image: rperin4/gerador-de-nomes:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          env:
+            - name: REDIS_HOST
+              value: "redis-service"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gerador-de-nomes-service
+spec:
+  selector:
+    app: gerador-de-nomes
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: NodePort
