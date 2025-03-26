@@ -1,88 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: locust-master
+  name: locust
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: locust
-      role: master
   template:
     metadata:
       labels:
         app: locust
-        role: master
     spec:
       containers:
-      - name: locust-master
-        image: locustio/locust
-        args: ["-f", "/mnt/locust/locustfile.py", "--master"]
+      - name: locust
+        image: locustio/locust:latest
+        args: ["-f", "/mnt/locust/locustfile.py"]
         ports:
         - containerPort: 8089
         volumeMounts:
-        - name: locustfile
+        - name: locustfile-volume
           mountPath: /mnt/locust
       volumes:
-      - name: locustfile
+      - name: locustfile-volume
         configMap:
-          name: locustfile-config
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: locust-master
-spec:
-  type: LoadBalancer
-  ports:
-  - port: 8089
-    targetPort: 8089
-  selector:
-    app: locust
-    role: master
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: locust-worker
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: locust
-      role: worker
-  template:
-    metadata:
-      labels:
-        app: locust
-        role: worker
-    spec:
-      containers:
-      - name: locust-worker
-        image: locustio/locust
-        args: ["-f", "/mnt/locust/locustfile.py", "--worker", "--master-host=locust-master"]
-        volumeMounts:
-        - name: locustfile
-          mountPath: /mnt/locust
-      volumes:
-      - name: locustfile
-        configMap:
-          name: locustfile-config
-
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: locustfile-config
-data:
-  locustfile.py: |
-    from locust import HttpUser, task, between
-
-    class WebsiteUser(HttpUser):
-        wait_time = between(1, 2)
-
-        @task
-        def load_page(self):
-            self.client.get("/")
+          name: locustfile-configmap
