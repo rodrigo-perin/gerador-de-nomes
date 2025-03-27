@@ -24,4 +24,4 @@ spec:
       volumes:
       - name: locustfile-volume
         configMap:
-          name: locustfile-configmap
+          name: locustfile-config
