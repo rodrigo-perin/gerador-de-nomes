@@ -10,10 +10,11 @@ faker = Faker('pt_BR')
 @app.route('/')
 def index():
     new_name = faker.name()  # Gera um nome aleatório
+    print(f"Gerando nome: {new_name}")  # Log
     redis_client.lpush('names', new_name)  # Adiciona ao Redis
-    redis_client.ltrim('names', 0, 9)  # Mantém apenas os últimos 10 nomes
     names = redis_client.lrange('names', 0, 9)  # Obtém os últimos 10 nomes
-    return render_template('index.html', names=names)
+    count = redis_client.llen('names')  # Conta total de nomes gerados
+    return render_template('index.html', names=names, count=count)
 
 # Rota para servir o CSS diretamente da pasta templates
 @app.route('/style.css')
