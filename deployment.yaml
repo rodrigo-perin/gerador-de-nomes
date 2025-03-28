@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: gerador-de-nomes
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: gerador-de-nomes
@@ -16,6 +16,10 @@ spec:
         - name: gerador-de-nomes
           image: rperin4/gerador-de-nomes:latest
           imagePullPolicy: Always
+          requests:
+            cpu: "100m"  # 100 milicores (0.1 CPU)
+          limits:
+            cpu: "500m"  # 500 milicores (0.5 CPU)
           ports:
             - containerPort: 80
           env:
