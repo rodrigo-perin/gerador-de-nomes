@@ -16,15 +16,16 @@ spec:
         - name: gerador-de-nomes
           image: rperin4/gerador-de-nomes:latest
           imagePullPolicy: Always
-          requests:
-            cpu: "100m"  # 100 milicores (0.1 CPU)
-          limits:
-            cpu: "500m"  # 500 milicores (0.5 CPU)
           ports:
             - containerPort: 80
           env:
             - name: REDIS_HOST
               value: "redis-service"
+          resources:
+          requests:
+            cpu: "100m"
+          limits:
+            cpu: "500m"
 ---
 apiVersion: v1
 kind: Service
