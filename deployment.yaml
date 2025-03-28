@@ -22,10 +22,10 @@ spec:
             - name: REDIS_HOST
               value: "redis-service"
           resources:
-          requests:
-            cpu: "100m"
-          limits:
-            cpu: "500m"
+            requests:
+              cpu: "100m"
+            limits:
+              cpu: "500m"
 ---
 apiVersion: v1
 kind: Service
