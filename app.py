@@ -1,35 +1,53 @@
-from flask import Flask, render_template, redirect, url_for, send_from_directory
-import redis
+import boto3
 import os
-import random
+from flask import Flask, render_template, request, send_from_directory, jsonify
 from faker import Faker
+import json
 
 app = Flask(__name__)
-redis_client = redis.Redis(host='redis-service', port=6379, decode_responses=True)
-faker = Faker('pt_BR')
+
+SQS_QUEUE_URL = os.environ['SQS_QUEUE_URL']  # Definido no docker-compose.yml
+DYNAMODB_TABLE_NAME = os.environ['DYNAMODB_TABLE_NAME']
+
+# Configuração boto3
+sqs_client = boto3.client('sqs', region_name=os.environ['AWS_REGION'],
+                   aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+                   aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'])
+
+
+# Cliente DynamoDB
+dynamodb = boto3.resource(
+    'dynamodb',
+    region_name=os.getenv('AWS_REGION', 'us-east-1'),
+    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+)
+
+table = dynamodb.Table(DYNAMODB_TABLE_NAME)
 
 @app.route('/')
 def index():
-    generated_names = [faker.name() for _ in range(30)]
-    
-    if generated_names: 
-        new_name = random.choice(generated_names)
-    else:
-        new_name = "Nome Padrão"
-
-    print(f"Gerando nomes: {generated_names}")
-    print(f"### Nome selecionado para gravação: {new_name}")
-
-    redis_client.lpush('names', new_name)
-    
-    names = redis_client.lrange('names', 0, 9)
-    count = redis_client.llen('names')
-    
+    # Buscar os 10 nomes mais recentes
+    response = table.scan()
+    items = response.get('Items', [])
+    items.sort(key=lambda x: x['timestamp'], reverse=True)
+    names = [item['name'] for item in items]
+    count = len(items)
     return render_template('index.html', names=names, count=count)
 
-@app.route('/style.css')
-def serve_css():
-    return send_from_directory(os.path.join(app.root_path, 'templates'), 'style.css')
+@app.route('/generate', methods=['POST'])
+def generate():
+    faker = Faker('pt_BR')
+    new_name = faker.name()
+    print(f"[APP] Gerado nome: {new_name}")
+
+    response = sqs_client.send_message(
+        QueueUrl=SQS_QUEUE_URL,
+        MessageBody=json.dumps({'name': new_name})
+    )
+    print(f"[APP] Mensagem enviada para SQS: {response}")
+
+    return jsonify({'generated_name': new_name})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80)

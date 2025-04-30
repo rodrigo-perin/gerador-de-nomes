@@ -27,6 +27,7 @@ build/
 docker-compose.override.yml
 kubeconfig
 .kube/
+comandos.txt
 
 # Ignorar imagens Docker locais
 *.tar
@@ -42,3 +43,6 @@ kubeconfig
 # Ignorar arquivos gerados pelo sistema operacional
 Thumbs.db
 desktop.ini
+
+# Ignorar pasta Teste
+/teste/

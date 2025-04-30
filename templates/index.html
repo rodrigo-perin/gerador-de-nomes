@@ -4,17 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador de Nomes</title>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
 </head>
 <body>
     <div class="container">
         <h1>Gerador de nomes</h1>
         <p>Total de nomes gerados: <strong>{{ count }}</strong></p>
-        
+        <br /> 
+        <button id="generate-btn">Gerar Nome</button>
+        <p id="generated-name"></p>
+        <script>
+            document.getElementById('generate-btn').addEventListener('click', function() {
+                fetch('/generate', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('generated-name').textContent = "Nome enviado para fila: " + data.generated_name;
+                })
+                .catch(error => console.error('Erro:', error));
+            });
+        </script>
+    <br /> 
+    {% if success %}
+        <p>Nome gerado: {{ generated_name }}</p>
+    {% endif %}
         <br />
         <br />
         <table>
-            <tr><th>Nomes Recentes</th></tr>
+            <tr><th>Nomes Recentes no DB</th></tr>
             {% for name in names %}
             <tr><td>{{ name }}</td></tr>
             {% endfor %}
@@ -22,7 +39,7 @@
         <br/>
         <br/>
         <br/>
-        Versão 1.22
+        Versão 1.26
         <br/>
         Autor: Rodrigo Perin
     </div>
