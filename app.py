@@ -6,33 +6,44 @@ import json
 
 app = Flask(__name__)
 
-SQS_QUEUE_URL = os.environ['SQS_QUEUE_URL']  # Definido no docker-compose.yml
+SQS_QUEUE_URL = os.environ['SQS_QUEUE_URL']
 DYNAMODB_TABLE_NAME = os.environ['DYNAMODB_TABLE_NAME']
 
-# Configuração boto3
 sqs_client = boto3.client('sqs', region_name=os.environ['AWS_REGION'],
                    aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
                    aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'])
 
-
-# Cliente DynamoDB
-dynamodb = boto3.resource(
-    'dynamodb',
-    region_name=os.getenv('AWS_REGION', 'us-east-1'),
-    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
-)
-
-table = dynamodb.Table(DYNAMODB_TABLE_NAME)
+try:
+    dynamodb = boto3.resource(
+        'dynamodb',
+        region_name=os.getenv('AWS_REGION', 'us-east-1'),
+        aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+    )
+    table = dynamodb.Table(DYNAMODB_TABLE_NAME)
+except Exception as e:
+    print(f"[APP] Erro ao inicializar DynamoDB: {e}")
+    table = None
 
 @app.route('/')
 def index():
-    # Buscar os 10 nomes mais recentes
-    response = table.scan()
-    items = response.get('Items', [])
-    items.sort(key=lambda x: x['timestamp'], reverse=True)
-    names = [item['name'] for item in items]
-    count = len(items)
+    names = []
+    count = 0
+
+    if table:
+        try:
+            response = table.scan()
+            items = response.get('Items', [])
+            items.sort(key=lambda x: x.get('timestamp', 0), reverse=True)
+            names = [item['name'] for item in items]
+            count = len(items)
+        except botocore.exceptions.ClientError as e:
+            print(f"[APP] Erro ao acessar o DynamoDB: {e}")
+        except Exception as e:
+            print(f"[APP] Erro inesperado: {e}")
+    else:
+        print("[APP] Tabela DynamoDB não inicializada.")
+
     return render_template('index.html', names=names, count=count)
 
 @app.route('/generate', methods=['POST'])
